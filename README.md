@@ -91,10 +91,6 @@ lib/
 └── main.dart             # Punto de entrada
 ```
 
-## 🎨 Capturas de Pantalla
-
-*(Aquí podrías añadir capturas de pantalla de la aplicación)*
-
 ## 🔄 Estado del Proyecto
 
 - ✅ **Desarrollo**: Completado
