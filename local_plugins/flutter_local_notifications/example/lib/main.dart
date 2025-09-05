@@ -2558,7 +2558,7 @@ class _HomePageState extends State<HomePage> {
           if (activeNotifications!.isEmpty)
             const Text('No active notifications'),
           if (activeNotifications.isNotEmpty)
-            for (ActiveNotification activeNotification in activeNotifications)
+            for (final ActiveNotification activeNotification in activeNotifications)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -2731,7 +2731,7 @@ class _HomePageState extends State<HomePage> {
             if (channels?.isEmpty ?? true)
               const Text('No notification channels')
             else
-              for (AndroidNotificationChannel channel in channels!)
+              for (final AndroidNotificationChannel channel in channels!)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[

@@ -15,7 +15,7 @@ class HomeStateCubit extends Equatable {
   final MinAndMaxModel? minAndMax;
   final List<double>? chartPrices;
   final bool loading;
-  final DioError? error;
+  final DioException? error;
 
   const HomeStateCubit({
     this.priceList = const [],

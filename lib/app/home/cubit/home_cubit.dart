@@ -31,7 +31,7 @@ class HomeCubit extends Cubit<HomeStateCubit> {
           minAndMax: minMax,
           averagePriceModel: averagePrice,
           chartPrices: chartPrices));
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       emit(state.copyWith(
         loading: false,
         error: e,

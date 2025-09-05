@@ -18,7 +18,7 @@ class RestInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioError err, ErrorInterceptorHandler handler) async {
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
     print('ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}');
     handler.reject(err);
   }
