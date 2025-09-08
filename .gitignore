@@ -129,6 +129,7 @@ coverage/
 .env.local
 .env.production
 .env.test
+lib/env/*
 
 # Temporary files
 *.tmp

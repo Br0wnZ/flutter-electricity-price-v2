@@ -4,38 +4,37 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.1.0+20
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.8
   http: ^1.5.0
-  shared_preferences: ^2.0.15
+  shared_preferences: ^2.5.3
   intl: ^0.20.2
   syncfusion_flutter_charts: ^30.2.7
   splash_screen_view: ^2.0.1
   shimmer: ^3.0.0
-  flutter_launcher_icons: ^0.13.0
   flutter_local_notifications:
     path: local_plugins/flutter_local_notifications
-  timezone: ^0.9.0
-  fluttertoast: ^8.0.9
+  timezone: ^0.9.4
+  fluttertoast: ^8.2.12
   dio: ^5.9.0
-  json_serializable: ^6.4.0
-  json_annotation: ^4.7.0
+  json_annotation: ^4.9.0
   retrofit: ^4.7.2
   flutter_bloc: ^9.1.1
   copy_with_extension: ^9.1.0
-  equatable: ^2.0.5
+  equatable: ^2.0.7
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.2.1
+  build_runner: ^2.7.1
   retrofit_generator: ^10.0.4
-  syncfusion_flutter_charts: ^30.2.7
-  syncfusion_flutter_core: ^30.2.7
+  json_serializable: ^6.11.0
+  copy_with_extension_gen: ^9.1.0
+  flutter_launcher_icons: ^0.13.1
 flutter_icons:
   android: true
   ios: true

@@ -80,6 +80,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       case AppLifecycleState.detached:
         _isResumed = false;
         break;
+      case AppLifecycleState.hidden:
+        break;
     }
   }
 

@@ -22,6 +22,8 @@ class ENV {
   Environment _getConfig(String environment) {
     switch (environment) {
       case EnvDev.name:
+        return EnvDev();
+      case EnvProd.name:
         return EnvProd();
       default:
         return EnvDev();

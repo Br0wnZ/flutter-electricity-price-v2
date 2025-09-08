@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:electricity_price/app/shared/utils/environment/env.dart';
 
 class RestInterceptor extends Interceptor {
 
@@ -6,6 +7,10 @@ class RestInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+    // Required headers for e·sios API
+    options.headers['Accept'] = 'application/json; application/vnd.esios-api-v1+json';
+    options.headers['x-api-key'] = ENV().config.apiKey;
+    options.headers['Content-Type'] = 'application/json';
     print('REQUEST[${options.method}] => PATH: ${options.path}');
     handler.next(options);
   }
