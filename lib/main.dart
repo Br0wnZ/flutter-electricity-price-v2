@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:electricity_price/app/home/pages/home_page.dart';
 import 'package:splash_screen_view/SplashScreenView.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -19,7 +18,6 @@ Future<void> main() async {
   ENV().initConfig(envName);
   final dio = Dio(BaseOptions(baseUrl: ENV().config.basePath));
   dio.interceptors.add(RestInterceptor());
-  tz.initializeTimeZones();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then(
     (_) {
       runApp(

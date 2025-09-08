@@ -1,68 +1,74 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/timezone.dart' as tz;
+import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/material.dart';
 
 class NotificationService {
   static final NotificationService _notificationService =
       NotificationService._internal();
 
-  factory NotificationService() {
-    return _notificationService;
-  }
-
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  factory NotificationService() => _notificationService;
 
   NotificationService._internal();
 
   Future<void> initNotification() async {
-    // Android initialization
-    final AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon');
-
-    // iOS/macOS initialization (Darwin)
-    final DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
+    await AwesomeNotifications().initialize(
+      // Set to null to use app icon by default
+      null,
+      [
+        NotificationChannel(
+          channelKey: 'default_channel',
+          channelName: 'Notificaciones generales',
+          channelDescription: 'Avisos y recordatorios generales',
+          defaultColor: const Color(0xFF3879B8),
+          ledColor: const Color(0xFF3879B8),
+          importance: NotificationImportance.Max,
+          channelShowBadge: true,
+        ),
+      ],
+      debug: false,
     );
 
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-            android: initializationSettingsAndroid,
-            iOS: initializationSettingsDarwin);
-    // the initialization settings are initialized after they are setted
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    // Request permissions when not granted
+    final allowed = await AwesomeNotifications().isNotificationAllowed();
+    if (!allowed) {
+      await AwesomeNotifications().requestPermissionToSendNotifications();
+    }
   }
 
-  Future zonedScheduleNotification(
+  // Schedules a notification for today at the given hour (0-23).
+  // Returns the notification id on success, or -1 if the time is in the past.
+  Future<int> zonedScheduleNotification(
       int id, int hour, String title, String body) async {
-    DateTime now = new DateTime.now();
-    DateTime date = new DateTime(now.year, now.month, now.day, hour, 0);
+    final now = DateTime.now();
+    final scheduled = DateTime(now.year, now.month, now.day, hour, 0, 2);
+
+    if (scheduled.isBefore(now)) {
+      return -1;
+    }
+
     try {
-      await flutterLocalNotificationsPlugin.zonedSchedule(
-        id,
-        title,
-        body,
-        tz.TZDateTime.parse(
-            tz.local, date.add(Duration(seconds: 2)).toString()),
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-              'your channel id', 'your channel name',
-              channelDescription: 'your channel description',
-              largeIcon: DrawableResourceAndroidBitmap("app_icon"),
-              importance: Importance.max,
-              priority: Priority.max,
-              icon: "app_icon",
-              playSound: true,
-              sound: RawResourceAndroidNotificationSound('notification')),
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: id,
+          channelKey: 'default_channel',
+          title: title,
+          body: body,
+          notificationLayout: NotificationLayout.Default,
         ),
-        androidAllowWhileIdle: true,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        schedule: NotificationCalendar(
+          year: scheduled.year,
+          month: scheduled.month,
+          day: scheduled.day,
+          hour: scheduled.hour,
+          minute: scheduled.minute,
+          second: scheduled.second,
+          millisecond: 0,
+          repeats: false,
+          preciseAlarm: true,
+          allowWhileIdle: true,
+        ),
       );
       return id;
-    } catch (e) {
+    } catch (_) {
       return -1;
     }
   }
