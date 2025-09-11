@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:syncfusion_flutter_charts/sparkcharts.dart';
-import 'package:electricity_price/app/home/cubit/home_cubit.dart';
-import 'package:electricity_price/app/custom_widgets/glass.dart';
+import 'package:precioluz/app/home/cubit/home_cubit.dart';
+import 'package:precioluz/app/custom_widgets/glass.dart';
 
 class Chart extends StatelessWidget {
   const Chart({Key? key}) : super(key: key);

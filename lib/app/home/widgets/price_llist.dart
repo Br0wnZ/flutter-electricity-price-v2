@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:electricity_price/app/custom_widgets/glass.dart';
-import 'package:electricity_price/app/home/cubit/home_cubit.dart';
-import 'package:electricity_price/app/services/notification_service.dart';
-import 'package:electricity_price/app/home/models/min_and_max_model.dart';
-import 'package:electricity_price/app/home/models/price_model.dart';
+import 'package:precioluz/app/custom_widgets/glass.dart';
+import 'package:precioluz/app/home/cubit/home_cubit.dart';
+import 'package:precioluz/app/services/notification_service.dart';
+import 'package:precioluz/app/home/models/min_and_max_model.dart';
+import 'package:precioluz/app/home/models/price_model.dart';
 
 class HourlyPrices extends StatelessWidget {
   const HourlyPrices({Key? key}) : super(key: key);
@@ -36,7 +36,7 @@ class HourlyPrices extends StatelessWidget {
     }
 
     return FutureBuilder(
-      future: setNotification(state.minAndMax!),
+      future: setNotification(context, state.minAndMax!),
       initialData: null,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         return Padding(
@@ -90,8 +90,9 @@ class HourlyPrices extends StatelessWidget {
     );
   }
 
-  Future<void> setNotification(MinAndMaxModel minAndMax) async {
+  Future<void> setNotification(BuildContext context, MinAndMaxModel minAndMax) async {
     await NotificationService().zonedScheduleNotification(
+        context,
         2,
         int.parse(minAndMax.minHour!.split('-')[0]),
         'Tenemos buenas noticias',
@@ -117,6 +118,7 @@ class PriceItemList extends StatelessWidget {
     return GestureDetector(
       onLongPress: () async {
         var result = await NotificationService().zonedScheduleNotification(
+            context,
             1,
             int.parse(prices[index].hour!.split('-')[0]),
             'Hora de encenderlo todo',

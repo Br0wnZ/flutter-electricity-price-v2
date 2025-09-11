@@ -1,13 +1,11 @@
-import 'package:electricity_price/app/shared/utils/environment/environment.dart';
+import 'package:precioluz/app/shared/utils/environment/environment.dart';
 
 import '../../../../env/environment_dev.dart';
 import '../../../../env/environment_prod.dart';
 
 class ENV {
-
   ENV._privateConstructor();
   static final ENV _instance = ENV._privateConstructor();
-
 
   factory ENV() {
     return _instance;

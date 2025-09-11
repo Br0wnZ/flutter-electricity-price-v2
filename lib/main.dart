@@ -1,8 +1,10 @@
-import 'package:electricity_price/app/services/notification_service.dart';
-import 'package:electricity_price/app/shared/utils/interceptors/rest_interceptor.dart';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:precioluz/app/services/notification_service.dart';
+import 'package:precioluz/app/shared/utils/interceptors/rest_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:electricity_price/app/home/pages/home_page.dart';
+import 'package:precioluz/app/home/pages/home_page.dart';
 import 'package:splash_screen_view/SplashScreenView.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,21 +15,67 @@ import 'env/environment_dev.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService().initNotification();
+  // Replace the red error screen with a friendly message in release
+  if (kReleaseMode) {
+    ErrorWidget.builder = (FlutterErrorDetails details) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  SizedBox(height: 12),
+                  Text(
+                    'Ha ocurrido un problema',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Intenta de nuevo en unos instantes.',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    };
+  }
   const String envName =
       String.fromEnvironment('ENVIRONMENT', defaultValue: EnvDev.name);
   ENV().initConfig(envName);
-  final dio = Dio(BaseOptions(baseUrl: ENV().config.basePath));
+  final dio = Dio(BaseOptions(
+    baseUrl: ENV().config.basePath,
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 15),
+    sendTimeout: const Duration(seconds: 15),
+  ));
   dio.interceptors.add(RestInterceptor());
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then(
-    (_) {
-      runApp(
-        RepositoryProvider(
-          create: (context) => dio,
-          child: MyApp(),
-        ),
-      );
-    },
-  );
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
+    runZonedGuarded(
+      () {
+        runApp(
+          RepositoryProvider(
+            create: (context) => dio,
+            child: MyApp(),
+          ),
+        );
+      },
+      (error, stack) {
+        // In release, avoid crash screens; optionally log to a service
+        if (kDebugMode) {
+          // ignore: avoid_print
+          print('Uncaught error: $error');
+        }
+      },
+    );
+  });
 }
 
 class MyApp extends StatefulWidget {

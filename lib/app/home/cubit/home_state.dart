@@ -1,7 +1,7 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
-import 'package:electricity_price/app/home/models/average_price_model.dart';
-import 'package:electricity_price/app/home/models/min_and_max_model.dart';
-import 'package:electricity_price/app/home/models/price_model.dart';
+import 'package:precioluz/app/home/models/average_price_model.dart';
+import 'package:precioluz/app/home/models/min_and_max_model.dart';
+import 'package:precioluz/app/home/models/price_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:dio/dio.dart';
 
@@ -17,15 +17,14 @@ class HomeStateCubit extends Equatable {
   final bool loading;
   final DioException? error;
 
-  const HomeStateCubit({
-    this.priceList = const [],
-    this.prices = const {},
-    this.averagePriceModel,
-    this.minAndMax,
-    this.chartPrices,
-    this.loading = false,
-    this.error
-  });
+  const HomeStateCubit(
+      {this.priceList = const [],
+      this.prices = const {},
+      this.averagePriceModel,
+      this.minAndMax,
+      this.chartPrices,
+      this.loading = false,
+      this.error});
 
   @override
   List<Object?> get props => [prices, loading];

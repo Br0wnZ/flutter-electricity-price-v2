@@ -56,7 +56,7 @@ Este proyecto fue desarrollado como una **migración y modernización** de una a
 git clone [URL_DEL_REPOSITORIO]
 
 # Navegar al directorio del proyecto
-cd flutter_electricity_price_new
+cd flutter_precioluz_new
 
 # Instalar dependencias
 flutter pub get

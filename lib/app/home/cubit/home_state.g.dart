@@ -11,7 +11,7 @@ abstract class _$HomeStateCubitCWProxy {
 
   HomeStateCubit chartPrices(List<double>? chartPrices);
 
-  HomeStateCubit error(DioError? error);
+  HomeStateCubit error(DioException? error);
 
   HomeStateCubit loading(bool loading);
 
@@ -30,7 +30,7 @@ abstract class _$HomeStateCubitCWProxy {
   HomeStateCubit call({
     AveragePriceModel? averagePriceModel,
     List<double>? chartPrices,
-    DioError? error,
+    DioException? error,
     bool? loading,
     MinAndMaxModel? minAndMax,
     List<PriceModel>? priceList,
@@ -53,7 +53,7 @@ class _$HomeStateCubitCWProxyImpl implements _$HomeStateCubitCWProxy {
       this(chartPrices: chartPrices);
 
   @override
-  HomeStateCubit error(DioError? error) => this(error: error);
+  HomeStateCubit error(DioException? error) => this(error: error);
 
   @override
   HomeStateCubit loading(bool loading) => this(loading: loading);
@@ -98,7 +98,7 @@ class _$HomeStateCubitCWProxyImpl implements _$HomeStateCubitCWProxy {
       error: error == const $CopyWithPlaceholder()
           ? _value.error
           // ignore: cast_nullable_to_non_nullable
-          : error as DioError?,
+          : error as DioException?,
       loading: loading == const $CopyWithPlaceholder() || loading == null
           ? _value.loading
           // ignore: cast_nullable_to_non_nullable

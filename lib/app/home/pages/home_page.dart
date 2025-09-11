@@ -1,14 +1,16 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
-import 'package:electricity_price/app/home/cubit/home_cubit.dart';
-import 'package:electricity_price/app/home/cubit/home_state.dart';
-import 'package:electricity_price/app/home/repositories/price_repository.dart';
-import 'package:electricity_price/app/home/widgets/average_price.dart';
-import 'package:electricity_price/app/home/widgets/chart.dart';
-import 'package:electricity_price/app/home/widgets/mind_and_max.dart';
-import 'package:electricity_price/app/home/widgets/price_llist.dart';
+import 'package:precioluz/app/home/cubit/home_cubit.dart';
+import 'package:precioluz/app/home/cubit/home_state.dart';
+import 'package:precioluz/app/home/repositories/price_repository.dart';
+import 'package:precioluz/app/home/widgets/average_price.dart';
+import 'package:precioluz/app/home/widgets/chart.dart';
+import 'package:precioluz/app/home/widgets/mind_and_max.dart';
+import 'package:precioluz/app/home/widgets/price_llist.dart';
+import 'package:precioluz/app/services/connectivity_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -59,43 +61,68 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-class MainContent extends StatelessWidget {
+class MainContent extends StatefulWidget {
   const MainContent({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeStateCubit>(
-      builder: (context, state) {
-        if (state.loading) {
-          return Center(child: CircularProgressIndicator());
-        }
+  State<MainContent> createState() => _MainContentState();
+}
 
-        if (state.error != null) {
+class _MainContentState extends State<MainContent> {
+  bool _wasOffline = false;
+  Timer? _retryTimer;
+
+  @override
+  void dispose() {
+    _retryTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<bool>(
+      stream: ConnectivityService.instance.status$,
+      builder: (context, snapshot) {
+        final offline = snapshot.hasData && snapshot.data == false;
+        // Auto reintento al recuperar conexión (con debounce)
+        if (_wasOffline && !offline) {
+          _retryTimer?.cancel();
+          _retryTimer = Timer(const Duration(seconds: 2), () {
+            if (!mounted) return;
+            final cubit = context.read<HomeCubit>();
+            if (!cubit.state.loading) {
+              cubit.loadPrices();
+            }
+          });
+        }
+        // Si vuelve a estar offline, cancela reintento pendiente
+        if (offline) {
+          _retryTimer?.cancel();
+          _retryTimer = null;
+        }
+        _wasOffline = offline;
+        if (offline) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red,
-                  ),
+                  Icon(Icons.wifi_off, size: 64, color: Colors.grey),
                   SizedBox(height: 16),
-                  Text(
-                    'Error de conexión',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
+                  Text('Sin conexión',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
                   Text(
-                    'No se pudo conectar al servicio de precios de la luz.',
+                    'Revisa tu conexión a internet para cargar los precios.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16),
                   ),
                   SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
+                      // Cuando vuelva la conexión, intentamos recargar
                       context.read<HomeCubit>().loadPrices();
                     },
                     child: Text('Reintentar'),
@@ -106,10 +133,52 @@ class MainContent extends StatelessWidget {
           );
         }
 
-        return NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return <Widget>[
-              SliverAppBar(
+        return BlocBuilder<HomeCubit, HomeStateCubit>(builder: (context, state) {
+          if (state.loading) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          if (state.error != null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.red,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Error de conexión',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'No se pudo conectar al servicio de precios de la luz.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<HomeCubit>().loadPrices();
+                      },
+                      child: Text('Reintentar'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return NestedScrollView(
+            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+              return <Widget>[
+                SliverAppBar(
                 forceElevated: true,
                 elevation: 8.0,
                 expandedHeight: MediaQuery.of(context).size.height * .4,
@@ -119,7 +188,7 @@ class MainContent extends StatelessWidget {
                 snap: false,
                 flexibleSpace: FlexibleSpaceBar(
                   title: innerBoxIsScrolled
-                      ? Text('Precio Luz', textScaleFactor: 1)
+                      ? Text('Precio Luz', textScaler: TextScaler.linear(1.0))
                       : Text(''),
                   centerTitle: true,
                   background: ClipRRect(
@@ -133,7 +202,7 @@ class MainContent extends StatelessWidget {
                               image:
                                   AssetImage("assets/images/background.webp"),
                               colorFilter: ColorFilter.mode(
-                                Colors.white.withOpacity(0.9),
+                                Colors.white.withValues(alpha: 0.9),
                                 BlendMode.modulate,
                               ),
                               fit: BoxFit.cover)),
@@ -158,7 +227,7 @@ class MainContent extends StatelessWidget {
                     image: DecorationImage(
                         image: AssetImage("assets/images/background.webp"),
                         colorFilter: ColorFilter.mode(
-                          Colors.white.withOpacity(0.9),
+                          Colors.white.withValues(alpha: 0.9),
                           BlendMode.modulate,
                         ),
                         fit: BoxFit.cover),
@@ -169,6 +238,7 @@ class MainContent extends StatelessWidget {
             ),
           ),
         );
+        });
       },
     );
   }

@@ -1,10 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
-import 'package:electricity_price/app/home/cubit/home_state.dart';
-import 'package:electricity_price/app/home/models/average_price_model.dart';
-import 'package:electricity_price/app/home/models/min_and_max_model.dart';
-import 'package:electricity_price/app/home/models/price_model.dart';
-import 'package:electricity_price/app/home/repositories/price_repository.dart';
+import 'package:precioluz/app/home/cubit/home_state.dart';
+import 'package:precioluz/app/home/models/average_price_model.dart';
+import 'package:precioluz/app/home/models/min_and_max_model.dart';
+import 'package:precioluz/app/home/models/price_model.dart';
+import 'package:precioluz/app/home/repositories/price_repository.dart';
 
 class HomeCubit extends Cubit<HomeStateCubit> {
   final PriceRepository _priceRepository;
