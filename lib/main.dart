@@ -11,6 +11,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'app/shared/utils/environment/env.dart';
 import 'env/environment_dev.dart';
+import 'design/app_theme.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'app/theme/theme_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,15 +61,19 @@ Future<void> main() async {
     sendTimeout: const Duration(seconds: 15),
   ));
   dio.interceptors.add(RestInterceptor());
+  final prefs = await SharedPreferences.getInstance();
+  final saved = prefs.getString('theme_mode');
+  // Default to light if no preference is saved
+  final initialTheme = saved == null ? ThemeMode.light : ThemeCubit.parse(saved);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
     runZonedGuarded(
       () {
-        runApp(
-          RepositoryProvider(
-            create: (context) => dio,
-            child: MyApp(),
-          ),
-        );
+        runApp(MultiRepositoryProvider(providers: [
+          RepositoryProvider(create: (context) => dio),
+        ], child: BlocProvider(
+          create: (_) => ThemeCubit(prefs, initialTheme),
+          child: MyApp(),
+        )));
       },
       (error, stack) {
         // In release, avoid crash screens; optionally log to a service
@@ -133,29 +141,37 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Precio Luz',
-      theme: ThemeData(
-        primarySwatch: MaterialColor(0xff3879b8, colorCodes),
-      ),
-      home: SafeArea(
-        child: _isResumed
-            ? HomePage()
-            : SplashScreenView(
-                navigateRoute: HomePage(),
-                pageRouteTransition: PageRouteTransition.SlideTransition,
-                duration: 2000,
-                imageSize: 400,
-                imageSrc: 'assets/images/splash-image.webp',
-                backgroundColor: Colors.white,
-                text: "By Bubulkapp",
-                textType: TextType.ScaleAnimatedText,
-                textStyle: TextStyle(
-                  fontSize: 30.0,
+    return DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
+      final light = lightDynamic != null
+          ? AppTheme.fromScheme(lightDynamic.harmonized())
+          : AppTheme.light();
+      final dark = darkDynamic != null
+          ? AppTheme.fromScheme(darkDynamic.harmonized())
+          : AppTheme.dark();
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Precio Luz',
+        theme: light,
+        darkTheme: dark,
+        themeMode: context.watch<ThemeCubit>().state,
+        home: SafeArea(
+          child: _isResumed
+              ? HomePage()
+              : SplashScreenView(
+                  navigateRoute: HomePage(),
+                  pageRouteTransition: PageRouteTransition.SlideTransition,
+                  duration: 2000,
+                  imageSize: 400,
+                  imageSrc: 'assets/images/splash-image.webp',
+                  backgroundColor: Colors.white,
+                  text: "By Bubulkapp",
+                  textType: TextType.ScaleAnimatedText,
+                  textStyle: TextStyle(
+                    fontSize: 30.0,
+                  ),
                 ),
-              ),
-      ),
-    );
+        ),
+      );
+    });
   }
 }
