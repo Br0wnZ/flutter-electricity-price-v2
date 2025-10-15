@@ -15,16 +15,16 @@ class PriceModel {
       this.market,
       this.price,
       this.units});
-  
+
   factory PriceModel.fromJson(Map<String, dynamic> json) => PriceModel(
-      date: json['date'] as String?,
-      hour: json['hour'] as String?,
-      isCheap: json['is-cheap'] as bool?,
-      isUnderAvg: json['is-under-avg'] as bool?,
-      market: json['market'] as String?,
-      price: (json['price'] as num?)?.toDouble(),
-      units: json['units'] as String?,
-    );
+        date: json['date'] as String?,
+        hour: json['hour'] as String?,
+        isCheap: json['is-cheap'] as bool?,
+        isUnderAvg: json['is-under-avg'] as bool?,
+        market: json['market'] as String?,
+        price: (json['price'] as num?)?.toDouble(),
+        units: json['units'] as String?,
+      );
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();

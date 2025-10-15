@@ -10,6 +10,7 @@ import 'package:precioluz/app/home/widgets/average_price.dart';
 import 'package:precioluz/app/home/widgets/chart.dart';
 import 'package:precioluz/app/home/widgets/mind_and_max.dart';
 import 'package:precioluz/app/home/widgets/price_llist.dart';
+import 'package:precioluz/app/home/models/price_region.dart';
 import 'package:precioluz/app/services/connectivity_service.dart';
 import 'package:precioluz/app/theme/theme_cubit.dart';
 
@@ -136,7 +137,8 @@ class _MainContentState extends State<MainContent> {
           );
         }
 
-        return BlocBuilder<HomeCubit, HomeStateCubit>(builder: (context, state) {
+        return BlocBuilder<HomeCubit, HomeStateCubit>(
+            builder: (context, state) {
           if (state.loading) {
             return Center(child: CircularProgressIndicator());
           }
@@ -149,7 +151,7 @@ class _MainContentState extends State<MainContent> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.error_outline,
+                      _getErrorIcon(state.error!.type),
                       size: 64,
                       color: Colors.red,
                     ),
@@ -161,16 +163,30 @@ class _MainContentState extends State<MainContent> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'No se pudo conectar al servicio de precios de la luz.',
+                      state.error!.message ??
+                          'No se pudo cargar los precios de la luz.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 16),
                     ),
                     SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<HomeCubit>().loadPrices();
-                      },
-                      child: Text('Reintentar'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<HomeCubit>().loadPrices();
+                          },
+                          child: Text('Reintentar'),
+                        ),
+                        SizedBox(width: 12),
+                        OutlinedButton(
+                          onPressed: () {
+                            // Show more technical details in debug mode
+                            _showErrorDetails(context, state.error!);
+                          },
+                          child: Text('Detalles'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -179,7 +195,8 @@ class _MainContentState extends State<MainContent> {
           }
 
           return NestedScrollView(
-            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            headerSliverBuilder:
+                (BuildContext context, bool innerBoxIsScrolled) {
               return <Widget>[
                 SliverAppBar(
                   forceElevated: innerBoxIsScrolled,
@@ -200,7 +217,7 @@ class _MainContentState extends State<MainContent> {
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _SimpleHeaderDelegate(
-                    height: 48,
+                    height: 88,
                     child: _HeaderBar(),
                   ),
                 ),
@@ -208,14 +225,70 @@ class _MainContentState extends State<MainContent> {
                 const SliverToBoxAdapter(child: MinAndMax()),
                 const SliverToBoxAdapter(child: Chart()),
               ];
-          },
-          body: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: HourlyPrices(),
-          ),
-        );
+            },
+            body: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: HourlyPrices(),
+            ),
+          );
         });
       },
+    );
+  }
+
+  /// Returns an appropriate icon based on the error type
+  IconData _getErrorIcon(DioExceptionType errorType) {
+    switch (errorType) {
+      case DioExceptionType.connectionError:
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.sendTimeout:
+        return Icons.wifi_off;
+      case DioExceptionType.badResponse:
+        return Icons.error_outline;
+      case DioExceptionType.cancel:
+        return Icons.cancel_outlined;
+      case DioExceptionType.badCertificate:
+        return Icons.security;
+      case DioExceptionType.unknown:
+        return Icons.help_outline;
+    }
+  }
+
+  /// Shows detailed error information in a dialog
+  void _showErrorDetails(BuildContext context, DioException error) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Detalles del error'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Tipo: ${error.type}'),
+              SizedBox(height: 8),
+              Text('Mensaje: ${error.message ?? 'Sin mensaje'}'),
+              if (error.response != null) ...[
+                SizedBox(height: 8),
+                Text('Código HTTP: ${error.response!.statusCode}'),
+                if (error.response!.data != null) ...[
+                  SizedBox(height: 8),
+                  Text('Respuesta: ${error.response!.data}'),
+                ],
+              ],
+              SizedBox(height: 8),
+              Text('URL: ${error.requestOptions.uri}'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cerrar'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -232,38 +305,80 @@ class _SimpleHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => height;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Material(
-      color: Theme.of(context).colorScheme.surface,
-      elevation: overlapsContent ? 2 : 0,
-      surfaceTintColor: Colors.transparent,
-      child: child,
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        elevation: overlapsContent ? 2 : 0,
+        surfaceTintColor: Colors.transparent,
+        child: child,
+      ),
     );
   }
 
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => true;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      true;
 }
 
 class _HeaderBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      alignment: Alignment.centerLeft,
-      child: Row(
-        children: [
-          Text('Precios de hoy', style: theme.textTheme.titleSmall),
-          const Spacer(),
-          IconButton(
-            tooltip: 'Actualizar',
-            icon: const Icon(Icons.refresh),
-            onPressed: () => context.read<HomeCubit>().loadPrices(),
+    return BlocBuilder<HomeCubit, HomeStateCubit>(
+      buildWhen: (previous, current) =>
+          previous.selectedRegion != current.selectedRegion ||
+          previous.loading != current.loading,
+      builder: (context, state) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          alignment: Alignment.centerLeft,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Precios de hoy', style: theme.textTheme.titleSmall),
+                    const SizedBox(height: 6),
+                    DropdownButtonHideUnderline(
+                      child: SizedBox(
+                        height: 44,
+                        child: DropdownButton<PriceRegion>(
+                          value: state.selectedRegion,
+                          isExpanded: true,
+                          icon: const Icon(Icons.expand_more),
+                          style: theme.textTheme.titleMedium,
+                          onChanged: state.loading
+                              ? null
+                              : (region) {
+                                  if (region != null) {
+                                    context
+                                        .read<HomeCubit>()
+                                        .changeRegion(region);
+                                  }
+                                },
+                          items: PriceRegion.values
+                              .map(
+                                (region) => DropdownMenuItem<PriceRegion>(
+                                  value: region,
+                                  child: Text(region.label),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -281,7 +396,8 @@ void _showThemeSheet(BuildContext context) {
           children: [
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Text('Tema', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: Text('Tema',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
             RadioListTile<ThemeMode>(
               value: ThemeMode.system,

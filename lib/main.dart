@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:precioluz/app/services/notification_service.dart';
-import 'package:precioluz/app/shared/utils/interceptors/rest_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:precioluz/app/home/pages/home_page.dart';
 import 'package:splash_screen_view/SplashScreenView.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'app/shared/utils/environment/env.dart';
+import 'core/network/dio_client.dart';
 import 'env/environment_dev.dart';
 import 'design/app_theme.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -17,73 +16,71 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/theme/theme_cubit.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  NotificationService().initNotification();
-  // Replace the red error screen with a friendly message in release
-  if (kReleaseMode) {
-    ErrorWidget.builder = (FlutterErrorDetails details) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  SizedBox(height: 12),
-                  Text(
-                    'Ha ocurrido un problema',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      NotificationService().initNotification();
+      // Replace the red error screen with a friendly message in release
+      if (kReleaseMode) {
+        ErrorWidget.builder = (FlutterErrorDetails details) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      SizedBox(height: 12),
+                      Text(
+                        'Ha ocurrido un problema',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Intenta de nuevo en unos instantes.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Intenta de nuevo en unos instantes.',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      );
-    };
-  }
-  const String envName =
-      String.fromEnvironment('ENVIRONMENT', defaultValue: EnvDev.name);
-  ENV().initConfig(envName);
-  final dio = Dio(BaseOptions(
-    baseUrl: ENV().config.basePath,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 15),
-    sendTimeout: const Duration(seconds: 15),
-  ));
-  dio.interceptors.add(RestInterceptor());
-  final prefs = await SharedPreferences.getInstance();
-  final saved = prefs.getString('theme_mode');
-  // Default to light if no preference is saved
-  final initialTheme = saved == null ? ThemeMode.light : ThemeCubit.parse(saved);
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runZonedGuarded(
-      () {
-        runApp(MultiRepositoryProvider(providers: [
-          RepositoryProvider(create: (context) => dio),
-        ], child: BlocProvider(
-          create: (_) => ThemeCubit(prefs, initialTheme),
-          child: MyApp(),
-        )));
-      },
-      (error, stack) {
-        // In release, avoid crash screens; optionally log to a service
-        if (kDebugMode) {
-          // ignore: avoid_print
-          print('Uncaught error: $error');
-        }
-      },
-    );
-  });
+          );
+        };
+      }
+      const String envName =
+          String.fromEnvironment('ENVIRONMENT', defaultValue: EnvDev.name);
+      ENV().initConfig(envName);
+      final dio = buildDioClient();
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString('theme_mode');
+      // Default to light if no preference is saved
+      final initialTheme =
+          saved == null ? ThemeMode.light : ThemeCubit.parse(saved);
+      await SystemChrome.setPreferredOrientations(
+          [DeviceOrientation.portraitUp]);
+      runApp(MultiRepositoryProvider(
+          providers: [
+            RepositoryProvider(create: (context) => dio),
+          ],
+          child: BlocProvider(
+            create: (_) => ThemeCubit(prefs, initialTheme),
+            child: MyApp(),
+          )));
+    },
+    (error, stack) {
+      // In release, avoid crash screens; optionally log to a service
+      if (kDebugMode) {
+        // ignore: avoid_print
+        print('Uncaught error: $error');
+      }
+    },
+  );
 }
 
 class MyApp extends StatefulWidget {

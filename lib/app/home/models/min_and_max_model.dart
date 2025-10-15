@@ -11,7 +11,7 @@ class MinAndMaxModel {
 
   MinAndMaxModel({this.max, this.maxHour, this.min, this.minHour});
 
-   factory MinAndMaxModel.fromJson(Map<String, dynamic> json) =>
+  factory MinAndMaxModel.fromJson(Map<String, dynamic> json) =>
       _$MinAndMaxModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$MinAndMaxModelToJson(this);

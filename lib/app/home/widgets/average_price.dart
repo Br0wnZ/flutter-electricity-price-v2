@@ -9,13 +9,11 @@ class AveragePrice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final price = ((BlocProvider.of<HomeCubit>(context)
-                    .state
-                    .averagePriceModel
-                    ?.price ??
-                0) /
-            1000)
-        .toStringAsFixed(5);
+    final price =
+        ((BlocProvider.of<HomeCubit>(context).state.averagePriceModel?.price ??
+                    0) /
+                1000)
+            .toStringAsFixed(5);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

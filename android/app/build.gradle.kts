@@ -21,24 +21,26 @@ android {
 
     signingConfigs {
         create("release") {
-            // Si quieres soportar "~", podrías resolverlo así:
-            val raw = keystoreProperties["storeFile"] as String
-            val expanded = raw.replaceFirst("^~".toRegex(), System.getProperty("user.home"))
-            storeFile = file(expanded)
-            storePassword = keystoreProperties["storePassword"] as String?
-            keyAlias = keystoreProperties["keyAlias"] as String?
-            keyPassword = keystoreProperties["keyPassword"] as String?
+            // Solo configurar si el archivo de propiedades existe y tiene las propiedades necesarias
+            if (keystorePropertiesFile.exists() && keystoreProperties["storeFile"] != null) {
+                val raw = keystoreProperties["storeFile"] as String
+                val expanded = raw.replaceFirst("^~".toRegex(), System.getProperty("user.home"))
+                storeFile = file(expanded)
+                storePassword = keystoreProperties["storePassword"] as String?
+                keyAlias = keystoreProperties["keyAlias"] as String?
+                keyPassword = keystoreProperties["keyPassword"] as String?
+            }
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {

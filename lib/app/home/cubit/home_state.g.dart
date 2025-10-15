@@ -7,106 +7,102 @@ part of 'home_state.dart';
 // **************************************************************************
 
 abstract class _$HomeStateCubitCWProxy {
-  HomeStateCubit averagePriceModel(AveragePriceModel? averagePriceModel);
-
-  HomeStateCubit chartPrices(List<double>? chartPrices);
-
-  HomeStateCubit error(DioException? error);
-
-  HomeStateCubit loading(bool loading);
-
-  HomeStateCubit minAndMax(MinAndMaxModel? minAndMax);
+  HomeStateCubit selectedRegion(PriceRegion selectedRegion);
 
   HomeStateCubit priceList(List<PriceModel> priceList);
 
   HomeStateCubit prices(Map<String, PriceModel> prices);
 
-  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `HomeStateCubit(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  HomeStateCubit averagePriceModel(AveragePriceModel? averagePriceModel);
+
+  HomeStateCubit minAndMax(MinAndMaxModel? minAndMax);
+
+  HomeStateCubit chartPrices(List<double>? chartPrices);
+
+  HomeStateCubit loading(bool loading);
+
+  HomeStateCubit error(DioException? error);
+
+  /// Creates a new instance with the provided field values.
+  /// Passing `null` to a nullable field nullifies it, while `null` for a non-nullable field is ignored. To update a single field use `HomeStateCubit(...).copyWith.fieldName(value)`.
   ///
-  /// Usage
+  /// Example:
   /// ```dart
   /// HomeStateCubit(...).copyWith(id: 12, name: "My name")
-  /// ````
+  /// ```
   HomeStateCubit call({
+    PriceRegion selectedRegion,
+    List<PriceModel> priceList,
+    Map<String, PriceModel> prices,
     AveragePriceModel? averagePriceModel,
-    List<double>? chartPrices,
-    DioException? error,
-    bool? loading,
     MinAndMaxModel? minAndMax,
-    List<PriceModel>? priceList,
-    Map<String, PriceModel>? prices,
+    List<double>? chartPrices,
+    bool loading,
+    DioException? error,
   });
 }
 
-/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfHomeStateCubit.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfHomeStateCubit.copyWith.fieldName(...)`
+/// Callable proxy for `copyWith` functionality.
+/// Use as `instanceOfHomeStateCubit.copyWith(...)` or call `instanceOfHomeStateCubit.copyWith.fieldName(value)` for a single field.
 class _$HomeStateCubitCWProxyImpl implements _$HomeStateCubitCWProxy {
-  final HomeStateCubit _value;
-
   const _$HomeStateCubitCWProxyImpl(this._value);
 
-  @override
-  HomeStateCubit averagePriceModel(AveragePriceModel? averagePriceModel) =>
-      this(averagePriceModel: averagePriceModel);
+  final HomeStateCubit _value;
 
   @override
-  HomeStateCubit chartPrices(List<double>? chartPrices) =>
-      this(chartPrices: chartPrices);
-
-  @override
-  HomeStateCubit error(DioException? error) => this(error: error);
-
-  @override
-  HomeStateCubit loading(bool loading) => this(loading: loading);
-
-  @override
-  HomeStateCubit minAndMax(MinAndMaxModel? minAndMax) =>
-      this(minAndMax: minAndMax);
+  HomeStateCubit selectedRegion(PriceRegion selectedRegion) =>
+      call(selectedRegion: selectedRegion);
 
   @override
   HomeStateCubit priceList(List<PriceModel> priceList) =>
-      this(priceList: priceList);
+      call(priceList: priceList);
 
   @override
-  HomeStateCubit prices(Map<String, PriceModel> prices) => this(prices: prices);
+  HomeStateCubit prices(Map<String, PriceModel> prices) => call(prices: prices);
+
+  @override
+  HomeStateCubit averagePriceModel(AveragePriceModel? averagePriceModel) =>
+      call(averagePriceModel: averagePriceModel);
+
+  @override
+  HomeStateCubit minAndMax(MinAndMaxModel? minAndMax) =>
+      call(minAndMax: minAndMax);
+
+  @override
+  HomeStateCubit chartPrices(List<double>? chartPrices) =>
+      call(chartPrices: chartPrices);
+
+  @override
+  HomeStateCubit loading(bool loading) => call(loading: loading);
+
+  @override
+  HomeStateCubit error(DioException? error) => call(error: error);
 
   @override
 
-  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `HomeStateCubit(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  /// Creates a new instance with the provided field values.
+  /// Passing `null` to a nullable field nullifies it, while `null` for a non-nullable field is ignored. To update a single field use `HomeStateCubit(...).copyWith.fieldName(value)`.
   ///
-  /// Usage
+  /// Example:
   /// ```dart
   /// HomeStateCubit(...).copyWith(id: 12, name: "My name")
-  /// ````
+  /// ```
   HomeStateCubit call({
-    Object? averagePriceModel = const $CopyWithPlaceholder(),
-    Object? chartPrices = const $CopyWithPlaceholder(),
-    Object? error = const $CopyWithPlaceholder(),
-    Object? loading = const $CopyWithPlaceholder(),
-    Object? minAndMax = const $CopyWithPlaceholder(),
+    Object? selectedRegion = const $CopyWithPlaceholder(),
     Object? priceList = const $CopyWithPlaceholder(),
     Object? prices = const $CopyWithPlaceholder(),
+    Object? averagePriceModel = const $CopyWithPlaceholder(),
+    Object? minAndMax = const $CopyWithPlaceholder(),
+    Object? chartPrices = const $CopyWithPlaceholder(),
+    Object? loading = const $CopyWithPlaceholder(),
+    Object? error = const $CopyWithPlaceholder(),
   }) {
     return HomeStateCubit(
-      averagePriceModel: averagePriceModel == const $CopyWithPlaceholder()
-          ? _value.averagePriceModel
+      selectedRegion: selectedRegion == const $CopyWithPlaceholder() ||
+              selectedRegion == null
+          ? _value.selectedRegion
           // ignore: cast_nullable_to_non_nullable
-          : averagePriceModel as AveragePriceModel?,
-      chartPrices: chartPrices == const $CopyWithPlaceholder()
-          ? _value.chartPrices
-          // ignore: cast_nullable_to_non_nullable
-          : chartPrices as List<double>?,
-      error: error == const $CopyWithPlaceholder()
-          ? _value.error
-          // ignore: cast_nullable_to_non_nullable
-          : error as DioException?,
-      loading: loading == const $CopyWithPlaceholder() || loading == null
-          ? _value.loading
-          // ignore: cast_nullable_to_non_nullable
-          : loading as bool,
-      minAndMax: minAndMax == const $CopyWithPlaceholder()
-          ? _value.minAndMax
-          // ignore: cast_nullable_to_non_nullable
-          : minAndMax as MinAndMaxModel?,
+          : selectedRegion as PriceRegion,
       priceList: priceList == const $CopyWithPlaceholder() || priceList == null
           ? _value.priceList
           // ignore: cast_nullable_to_non_nullable
@@ -115,12 +111,33 @@ class _$HomeStateCubitCWProxyImpl implements _$HomeStateCubitCWProxy {
           ? _value.prices
           // ignore: cast_nullable_to_non_nullable
           : prices as Map<String, PriceModel>,
+      averagePriceModel: averagePriceModel == const $CopyWithPlaceholder()
+          ? _value.averagePriceModel
+          // ignore: cast_nullable_to_non_nullable
+          : averagePriceModel as AveragePriceModel?,
+      minAndMax: minAndMax == const $CopyWithPlaceholder()
+          ? _value.minAndMax
+          // ignore: cast_nullable_to_non_nullable
+          : minAndMax as MinAndMaxModel?,
+      chartPrices: chartPrices == const $CopyWithPlaceholder()
+          ? _value.chartPrices
+          // ignore: cast_nullable_to_non_nullable
+          : chartPrices as List<double>?,
+      loading: loading == const $CopyWithPlaceholder() || loading == null
+          ? _value.loading
+          // ignore: cast_nullable_to_non_nullable
+          : loading as bool,
+      error: error == const $CopyWithPlaceholder()
+          ? _value.error
+          // ignore: cast_nullable_to_non_nullable
+          : error as DioException?,
     );
   }
 }
 
 extension $HomeStateCubitCopyWith on HomeStateCubit {
-  /// Returns a callable class that can be used as follows: `instanceOfHomeStateCubit.copyWith(...)` or like so:`instanceOfHomeStateCubit.copyWith.fieldName(...)`.
+  /// Returns a callable class used to build a new instance with modified fields.
+  /// Example: `instanceOfHomeStateCubit.copyWith(...)` or `instanceOfHomeStateCubit.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
   _$HomeStateCubitCWProxy get copyWith => _$HomeStateCubitCWProxyImpl(this);
 }
