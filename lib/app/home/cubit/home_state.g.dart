@@ -9,9 +9,18 @@ part of 'home_state.dart';
 abstract class _$HomeStateCubitCWProxy {
   HomeStateCubit selectedRegion(PriceRegion selectedRegion);
 
+  HomeStateCubit selectedDay(PriceDay selectedDay);
+
   HomeStateCubit priceList(List<PriceModel> priceList);
 
   HomeStateCubit prices(Map<String, PriceModel> prices);
+
+  HomeStateCubit todayPrices(Map<String, PriceModel> todayPrices);
+
+  HomeStateCubit tomorrowPrices(Map<String, PriceModel> tomorrowPrices);
+
+  HomeStateCubit nextDayAvailability(
+      NextDayAvailabilityModel? nextDayAvailability);
 
   HomeStateCubit averagePriceModel(AveragePriceModel? averagePriceModel);
 
@@ -32,8 +41,12 @@ abstract class _$HomeStateCubitCWProxy {
   /// ```
   HomeStateCubit call({
     PriceRegion selectedRegion,
+    PriceDay selectedDay,
     List<PriceModel> priceList,
     Map<String, PriceModel> prices,
+    Map<String, PriceModel> todayPrices,
+    Map<String, PriceModel> tomorrowPrices,
+    NextDayAvailabilityModel? nextDayAvailability,
     AveragePriceModel? averagePriceModel,
     MinAndMaxModel? minAndMax,
     List<double>? chartPrices,
@@ -54,11 +67,28 @@ class _$HomeStateCubitCWProxyImpl implements _$HomeStateCubitCWProxy {
       call(selectedRegion: selectedRegion);
 
   @override
+  HomeStateCubit selectedDay(PriceDay selectedDay) =>
+      call(selectedDay: selectedDay);
+
+  @override
   HomeStateCubit priceList(List<PriceModel> priceList) =>
       call(priceList: priceList);
 
   @override
   HomeStateCubit prices(Map<String, PriceModel> prices) => call(prices: prices);
+
+  @override
+  HomeStateCubit todayPrices(Map<String, PriceModel> todayPrices) =>
+      call(todayPrices: todayPrices);
+
+  @override
+  HomeStateCubit tomorrowPrices(Map<String, PriceModel> tomorrowPrices) =>
+      call(tomorrowPrices: tomorrowPrices);
+
+  @override
+  HomeStateCubit nextDayAvailability(
+          NextDayAvailabilityModel? nextDayAvailability) =>
+      call(nextDayAvailability: nextDayAvailability);
 
   @override
   HomeStateCubit averagePriceModel(AveragePriceModel? averagePriceModel) =>
@@ -89,8 +119,12 @@ class _$HomeStateCubitCWProxyImpl implements _$HomeStateCubitCWProxy {
   /// ```
   HomeStateCubit call({
     Object? selectedRegion = const $CopyWithPlaceholder(),
+    Object? selectedDay = const $CopyWithPlaceholder(),
     Object? priceList = const $CopyWithPlaceholder(),
     Object? prices = const $CopyWithPlaceholder(),
+    Object? todayPrices = const $CopyWithPlaceholder(),
+    Object? tomorrowPrices = const $CopyWithPlaceholder(),
+    Object? nextDayAvailability = const $CopyWithPlaceholder(),
     Object? averagePriceModel = const $CopyWithPlaceholder(),
     Object? minAndMax = const $CopyWithPlaceholder(),
     Object? chartPrices = const $CopyWithPlaceholder(),
@@ -103,6 +137,11 @@ class _$HomeStateCubitCWProxyImpl implements _$HomeStateCubitCWProxy {
           ? _value.selectedRegion
           // ignore: cast_nullable_to_non_nullable
           : selectedRegion as PriceRegion,
+      selectedDay:
+          selectedDay == const $CopyWithPlaceholder() || selectedDay == null
+              ? _value.selectedDay
+              // ignore: cast_nullable_to_non_nullable
+              : selectedDay as PriceDay,
       priceList: priceList == const $CopyWithPlaceholder() || priceList == null
           ? _value.priceList
           // ignore: cast_nullable_to_non_nullable
@@ -111,6 +150,20 @@ class _$HomeStateCubitCWProxyImpl implements _$HomeStateCubitCWProxy {
           ? _value.prices
           // ignore: cast_nullable_to_non_nullable
           : prices as Map<String, PriceModel>,
+      todayPrices:
+          todayPrices == const $CopyWithPlaceholder() || todayPrices == null
+              ? _value.todayPrices
+              // ignore: cast_nullable_to_non_nullable
+              : todayPrices as Map<String, PriceModel>,
+      tomorrowPrices: tomorrowPrices == const $CopyWithPlaceholder() ||
+              tomorrowPrices == null
+          ? _value.tomorrowPrices
+          // ignore: cast_nullable_to_non_nullable
+          : tomorrowPrices as Map<String, PriceModel>,
+      nextDayAvailability: nextDayAvailability == const $CopyWithPlaceholder()
+          ? _value.nextDayAvailability
+          // ignore: cast_nullable_to_non_nullable
+          : nextDayAvailability as NextDayAvailabilityModel?,
       averagePriceModel: averagePriceModel == const $CopyWithPlaceholder()
           ? _value.averagePriceModel
           // ignore: cast_nullable_to_non_nullable

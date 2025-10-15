@@ -7,6 +7,7 @@ import 'package:precioluz/app/services/notification_service.dart';
 import 'package:precioluz/app/services/exact_alarm_permission.dart';
 import 'package:precioluz/app/home/models/min_and_max_model.dart';
 import 'package:precioluz/app/home/models/price_model.dart';
+import 'package:precioluz/app/home/utils/price_day_strings.dart';
 
 class HourlyPrices extends StatefulWidget {
   const HourlyPrices({Key? key}) : super(key: key);
@@ -21,6 +22,7 @@ class _HourlyPricesState extends State<HourlyPrices> {
   @override
   Widget build(BuildContext context) {
     final state = BlocProvider.of<HomeCubit>(context).state;
+    final labels = state.dayStrings;
 
     // Check if minAndMax is null before proceeding
     if (state.minAndMax == null) {
@@ -36,7 +38,7 @@ class _HourlyPricesState extends State<HourlyPrices> {
     // Schedule automatically once per session without prompting permissions
     if (!_autoScheduled && state.minAndMax != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scheduleAutoIfPermitted(context, state.minAndMax!);
+        _scheduleAutoIfPermitted(context, state.minAndMax!, labels);
       });
       _autoScheduled = true;
     }
@@ -49,8 +51,10 @@ class _HourlyPricesState extends State<HourlyPrices> {
           children: [
             Align(
               alignment: Alignment.centerLeft,
-              child: Text('Precio del kWh por horas',
-                  style: Theme.of(context).textTheme.titleMedium),
+              child: Text(
+                labels.hourlyListTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
             const SizedBox(height: 8),
             Expanded(
@@ -68,6 +72,7 @@ class _HourlyPricesState extends State<HourlyPrices> {
                           BlocProvider.of<HomeCubit>(context).state.priceList,
                       minAndMax:
                           BlocProvider.of<HomeCubit>(context).state.minAndMax!,
+                      strings: labels,
                       index: index,
                     );
                   },
@@ -81,16 +86,20 @@ class _HourlyPricesState extends State<HourlyPrices> {
   }
 
   Future<void> _scheduleAutoIfPermitted(
-      BuildContext context, MinAndMaxModel minAndMax) async {
+    BuildContext context,
+    MinAndMaxModel minAndMax,
+    PriceDayStrings strings,
+  ) async {
     final canExact = await ExactAlarmPermission.canScheduleExactAlarms();
     if (!canExact) return; // no solicitar permisos de forma automática
+    final minPrice = (minAndMax.min ?? 0) / 1000;
+    final priceText = minPrice.toStringAsFixed(5);
     await NotificationService().zonedScheduleNotification(
       context,
       2,
       int.parse(minAndMax.minHour!.split('-')[0]),
-      'Tenemos buenas noticias',
-      'El precio de la luz ahora durante la próxima hora será el más barato de hoy. '
-          '${double.parse((minAndMax.min! / 1000).toStringAsFixed(5))} €/kwh',
+      strings.cheapestNotificationTitle,
+      strings.cheapestNotificationBody(priceText),
     );
   }
 }
@@ -99,10 +108,12 @@ class PriceItemList extends StatelessWidget {
   final List<PriceModel> prices;
   final MinAndMaxModel minAndMax;
   final int index;
+  final PriceDayStrings strings;
   const PriceItemList({
     Key? key,
     required this.minAndMax,
     required this.prices,
+    required this.strings,
     required this.index,
   }) : super(key: key);
 
@@ -112,12 +123,13 @@ class PriceItemList extends StatelessWidget {
     ValueNotifier<int> selectedIndex = ValueNotifier(-1);
     return GestureDetector(
       onLongPress: () async {
+        final priceText = (prices[index].price! / 1000).toStringAsFixed(5);
         var result = await NotificationService().zonedScheduleNotification(
             context,
             1,
             int.parse(prices[index].hour!.split('-')[0]),
-            'Hora de encenderlo todo',
-            'El precio de la luz ahora es de ${(prices[index].price! / 1000).toStringAsFixed(5)} €/kwh');
+            strings.manualNotificationTitle,
+            strings.manualNotificationBody(priceText));
 
         _showToastMessage(result, prices, index);
         selectedIndex.value = index;

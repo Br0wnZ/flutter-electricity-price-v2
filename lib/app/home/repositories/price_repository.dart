@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:precioluz/app/home/models/average_price_model.dart';
+import 'package:precioluz/app/home/models/next_day_availability_model.dart';
 import 'package:precioluz/app/home/models/price_model.dart';
 
 class PriceRepository {
@@ -91,8 +92,48 @@ class PriceRepository {
   }
 
   Future<Map<String, PriceModel>> getTomorrowPrices(String zone) async {
-    final tomorrow = _formatDay(DateTime.now().add(const Duration(days: 1)));
-    return _getPricesByDay(zone, tomorrow);
+    final availability = await getNextDayAvailability(zone);
+    if (!availability.hasData) {
+      throw StateError(
+        'No hay datos publicados para el día siguiente en $zone',
+      );
+    }
+    return availability.prices;
+  }
+
+  Future<NextDayAvailabilityModel> getNextDayAvailability(String zone) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/v1/client/next-day-availability',
+      queryParameters: {'zone': zone},
+    );
+    final payload = response.data;
+    if (payload == null) {
+      throw StateError('La respuesta del servidor está vacía');
+    }
+    _throwIfError(payload);
+
+    final responseZone = payload['zone']?.toString() ?? zone;
+    final geoId = payload['geo_id'] as int?;
+    final day = payload['day']?.toString();
+    var available = payload['available'] == true;
+    Map<String, PriceModel> prices = const <String, PriceModel>{};
+    if (available) {
+      final hours = payload['hours'];
+      if (hours is List && hours.isNotEmpty) {
+        prices = _parsePrices(payload);
+      } else {
+        available = false;
+      }
+    }
+    final count = payload['count'] as int? ?? prices.length;
+    return NextDayAvailabilityModel(
+      zone: responseZone,
+      geoId: geoId,
+      day: day,
+      available: available,
+      prices: prices,
+      count: count,
+    );
   }
 
   Future<AveragePriceModel> getAverageForDay(

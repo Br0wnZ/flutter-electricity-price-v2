@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 import 'package:precioluz/app/home/cubit/home_cubit.dart';
+import 'package:precioluz/app/home/cubit/home_state.dart';
 import 'package:precioluz/app/shared/widgets/app_card.dart';
 
 class Chart extends StatelessWidget {
@@ -10,12 +11,13 @@ class Chart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final state = BlocProvider.of<HomeCubit>(context).state;
+    final label = state.dayStrings.chartTitle;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Evolución del precio para hoy',
-              style: theme.textTheme.titleMedium),
+          Text(label, style: theme.textTheme.titleMedium),
           const SizedBox(height: 12),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.12,
@@ -32,7 +34,7 @@ class Chart extends StatelessWidget {
                   displayMode: SparkChartMarkerDisplayMode.all,
                   color: theme.colorScheme.onSurface),
               axisLineWidth: 0,
-              data: BlocProvider.of<HomeCubit>(context).state.chartPrices ?? [],
+              data: state.chartPrices ?? [],
             ),
           )
         ],

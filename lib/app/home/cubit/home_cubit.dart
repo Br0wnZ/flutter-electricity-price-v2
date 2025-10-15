@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:precioluz/app/home/cubit/home_state.dart';
 import 'package:precioluz/app/home/models/average_price_model.dart';
 import 'package:precioluz/app/home/models/min_and_max_model.dart';
+import 'package:precioluz/app/home/models/next_day_availability_model.dart';
 import 'package:precioluz/app/home/models/price_model.dart';
 import 'package:precioluz/app/home/models/price_region.dart';
 import 'package:precioluz/app/home/repositories/price_repository.dart';
@@ -57,30 +58,66 @@ class HomeCubit extends Cubit<HomeStateCubit> {
       }
 
       if (kDebugMode) print('Calling _priceRepository.getPrices()...');
-      final responses = await _priceRepository.getPrices(region: targetRegion);
-      if (kDebugMode) print('Received ${responses.length} price responses');
-
-      final prices = responses;
-      final minMax = _getMinAndMaxPrice(prices);
-      final chartPrices = _getChartPrices(prices);
-      final averageprices = _getAveragePrices(prices);
-      if (kDebugMode) print('Computed average prices: ${averageprices?.price}');
-
-      List<PriceModel> priceList = [];
-      for (var item in prices.values) {
-        priceList.add(item);
+      final todayPrices =
+          await _priceRepository.getPrices(region: targetRegion);
+      if (kDebugMode) {
+        print('Received ${todayPrices.length} price responses for today');
       }
 
-      if (kDebugMode)
-        print('Emitting success state with ${priceList.length} prices');
+      NextDayAvailabilityModel nextDayAvailability;
+      try {
+        nextDayAvailability = await _priceRepository.getNextDayAvailability(
+          targetRegion.apiValue,
+        );
+        if (kDebugMode) {
+          print(
+              'Next day availability: ${nextDayAvailability.available} (count: ${nextDayAvailability.count})');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Failed to fetch next day availability: $e');
+        }
+        nextDayAvailability =
+            NextDayAvailabilityModel.empty(zone: targetRegion.apiValue);
+      }
+
+      final Map<String, PriceModel> tomorrowPrices = nextDayAvailability.hasData
+          ? nextDayAvailability.prices
+          : <String, PriceModel>{};
+
+      PriceDay desiredDay = state.selectedDay;
+      if (desiredDay == PriceDay.tomorrow && !nextDayAvailability.hasData) {
+        desiredDay = PriceDay.today;
+      }
+
+      final Map<String, PriceModel> activePrices =
+          desiredDay == PriceDay.today ? todayPrices : tomorrowPrices;
+
+      final priceList = List<PriceModel>.from(activePrices.values);
+      final minMax =
+          activePrices.isNotEmpty ? _getMinAndMaxPrice(activePrices) : null;
+      final chartPrices =
+          activePrices.isNotEmpty ? _getChartPrices(activePrices) : null;
+      final averageprices =
+          activePrices.isNotEmpty ? _getAveragePrices(activePrices) : null;
+      if (kDebugMode) {
+        print(
+            'Emitting success state with ${priceList.length} prices for $desiredDay');
+      }
       emit(state.copyWith(
-          loading: false,
-          selectedRegion: targetRegion,
-          prices: prices,
-          priceList: priceList,
-          minAndMax: minMax,
-          averagePriceModel: averageprices,
-          chartPrices: chartPrices));
+        loading: false,
+        selectedRegion: targetRegion,
+        selectedDay: desiredDay,
+        todayPrices: todayPrices,
+        tomorrowPrices: tomorrowPrices,
+        nextDayAvailability: nextDayAvailability,
+        prices: activePrices,
+        priceList: priceList,
+        minAndMax: minMax,
+        averagePriceModel: averageprices,
+        chartPrices: chartPrices,
+        error: null,
+      ));
     } on DioException catch (e) {
       if (kDebugMode) print('DioException caught: ${e.type} - ${e.message}');
       // Create a more user-friendly error message based on the error type
@@ -103,6 +140,29 @@ class HomeCubit extends Cubit<HomeStateCubit> {
         error: dioError,
       ));
     }
+  }
+
+  void selectDay(PriceDay day) {
+    if (day == state.selectedDay) {
+      return;
+    }
+    if (day == PriceDay.tomorrow && !state.tomorrowAvailable) {
+      return;
+    }
+    final targetPrices =
+        day == PriceDay.today ? state.todayPrices : state.tomorrowPrices;
+    if (targetPrices.isEmpty) {
+      return;
+    }
+    final priceList = List<PriceModel>.from(targetPrices.values);
+    emit(state.copyWith(
+      selectedDay: day,
+      prices: targetPrices,
+      priceList: priceList,
+      minAndMax: _getMinAndMaxPrice(targetPrices),
+      averagePriceModel: _getAveragePrices(targetPrices),
+      chartPrices: _getChartPrices(targetPrices),
+    ));
   }
 
   /// Creates a user-friendly error with appropriate message based on DioException type

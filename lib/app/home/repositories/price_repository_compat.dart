@@ -1,3 +1,4 @@
+import 'package:precioluz/app/home/models/next_day_availability_model.dart';
 import 'package:precioluz/app/home/models/price_model.dart';
 import 'package:precioluz/app/home/models/price_region.dart';
 import 'package:precioluz/app/home/repositories/price_repository.dart';
@@ -20,5 +21,11 @@ extension PriceRepositoryCompat on PriceRepository {
       return getPricesForDay(zone, dayISO);
     }
     return getTodayPrices(zone);
+  }
+
+  Future<NextDayAvailabilityModel> getNextDayAvailabilityForRegion({
+    PriceRegion region = PriceRegion.peninsula,
+  }) {
+    return getNextDayAvailability(region.apiValue);
   }
 }
